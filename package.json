@@ -1,0 +1,27 @@
+{
+  "name": "cycle-konami-code",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --hot",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@cycle/dom": "^22.3.0",
+    "@cycle/run": "^5.2.0",
+    "@cycle/rxjs-run": "^10.2.0",
+    "create-cycle-app": "^5.0.0",
+    "rxjs": "^6.4.0",
+    "xstream": "^11.10.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.3.4000",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.2.1"
+  }
+}
