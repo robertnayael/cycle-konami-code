@@ -2,24 +2,38 @@ import { form, label, input, DOMSource, VNode } from '@cycle/dom'
 import { Observable, of, concat, combineLatest } from 'rxjs'
 import { map, mapTo, pluck, startWith } from 'rxjs/operators'
 
-export function Input(sources: Input.Sources): Input.Sinks {
-
-    const inputValue$ = (sources.DOM
+function intent(DOM: DOMSource) {
+    const inputValue$ = (DOM
         .select('.input')
         .events('input') as unknown as Observable<Event>)
         .pipe(
             map(event => (<HTMLInputElement>event.target).value)
         )
 
-    const inputFocus$ = (sources.DOM
+    const inputFocus$ = (DOM
         .select('.input')
         .events('focus') as unknown as Observable<Event>)
         .pipe(mapTo(null))
 
-    const inputBlur$ = (sources.DOM
+    const inputBlur$ = (DOM
         .select('.input')
         .events('blur') as unknown as Observable<Event>)
         .pipe(mapTo(null), startWith(null))
+
+    return {
+        inputValue$,
+        inputFocus$,
+        inputBlur$
+    }
+}
+
+export function Input(sources: Input.Sources): Input.Sinks {
+
+    const {
+        inputValue$,
+        inputFocus$,
+        inputBlur$
+    } = intent(sources.DOM)
 
     const props$ = sources.props
 
