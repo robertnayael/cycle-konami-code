@@ -27,7 +27,7 @@ function intent(DOM: DOMSource): Actions {
     }
 }
 
-function model(actions: Actions, props$: Observable<Input.Props>): Observable<State> {
+function model(actions: Actions, props$: Observable<Props>): Observable<State> {
     const initialValue$ = props$.pipe(pluck('initialValue'))
     const labelText$ = props$.pipe(pluck('label'))
     const currentValue$ = concat(initialValue$, actions.inputValue$)
@@ -63,7 +63,7 @@ function view(state$: Observable<State>): Observable<VNode> {
     )
 }
 
-export function Input(sources: Input.Sources): Input.Sinks {
+export function Input(sources: Sources): Sinks {
 
     const actions = intent(sources.DOM)
     const state$ = model(actions, sources.props)
@@ -90,23 +90,23 @@ interface State {
     labelText: string
 }
 
+interface Props {
+    label: string
+    initialValue?: string
+}
+
+interface Sinks {
+    DOM: Observable<VNode>,
+    value: Observable<string>,
+    focus: Observable<void>
+    blur: Observable<void>
+}
+
 export namespace Input {
-
-    export interface Props {
-        label: string
-        initialValue?: string
-    }
-
     export interface Sources {
         DOM: DOMSource
         props: Observable<Props>
     }
-
-    export interface Sinks {
-        DOM: Observable<VNode>,
-        value: Observable<string>,
-        focus: Observable<void>
-        blur: Observable<void>
-    }
-
 }
+
+interface Sources extends Input.Sources {}
