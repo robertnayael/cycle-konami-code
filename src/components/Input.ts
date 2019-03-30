@@ -2,7 +2,7 @@ import { form, label, input, DOMSource, VNode } from '@cycle/dom'
 import { Observable, of, concat, combineLatest } from 'rxjs'
 import { map, mapTo, pluck, startWith } from 'rxjs/operators'
 
-function intent(DOM: DOMSource) {
+function intent(DOM: DOMSource): Actions {
     const inputValue$ = (DOM
         .select('.input')
         .events('input') as unknown as Observable<Event>)
@@ -27,23 +27,22 @@ function intent(DOM: DOMSource) {
     }
 }
 
-export function Input(sources: Input.Sources): Input.Sinks {
-
-    const {
-        inputValue$,
-        inputFocus$,
-        inputBlur$
-    } = intent(sources.DOM)
-
-    const props$ = sources.props
-
+function model(actions: Actions, props$: Observable<Input.Props>): Observable<State> {
     const initialValue$ = props$.pipe(pluck('initialValue'))
     const labelText$ = props$.pipe(pluck('label'))
+    const currentValue$ = concat(initialValue$, actions.inputValue$)
 
-    const currentValue$ = concat(initialValue$, inputValue$)
+    return combineLatest(labelText$, currentValue$).pipe(
+        map(([ labelText, currentValue ]) => ({
+            labelText,
+            currentValue
+        }))
+    )
+}
 
-    const vDom$ = combineLatest(currentValue$, labelText$).pipe(
-        map(([ value, labelText ]) => form('.wrapper', [
+function view(state$: Observable<State>): Observable<VNode> {
+    return state$.pipe(
+        map(({ currentValue, labelText }) => form('.wrapper', [
             label(
                 '.label',
                 {
@@ -55,20 +54,40 @@ export function Input(sources: Input.Sources): Input.Sinks {
             ),
             input('.input', {
                 attrs: {
-                    value,
+                    currentValue,
                     name: 'input-field',
                     id: 'input-field'
                 }
             })
         ]))
     )
+}
+
+export function Input(sources: Input.Sources): Input.Sinks {
+
+    const actions = intent(sources.DOM)
+    const state$ = model(actions, sources.props)
+    const vDom$ = view(state$)
+
+    const currentValue$ = state$.pipe(pluck('currentValue'))
 
     return {
         DOM: vDom$,
         value: currentValue$,
-        focus: inputFocus$,
-        blur: inputBlur$
+        focus: actions.inputFocus$,
+        blur: actions.inputBlur$
     }
+}
+
+interface Actions {
+    inputValue$: Observable<string>
+    inputFocus$: Observable<void>
+    inputBlur$: Observable<void>
+}
+
+interface State {
+    currentValue: string
+    labelText: string
 }
 
 export namespace Input {
@@ -86,8 +105,8 @@ export namespace Input {
     export interface Sinks {
         DOM: Observable<VNode>,
         value: Observable<string>,
-        focus: Observable<boolean>
-        blur: Observable<boolean>
+        focus: Observable<void>
+        blur: Observable<void>
     }
 
 }
