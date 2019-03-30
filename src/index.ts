@@ -1,10 +1,10 @@
 import run from '@cycle/rxjs-run'
 import { div, makeDOMDriver, DOMSource, VNode } from '@cycle/dom'
-import { Observable, of, combineLatest, merge } from 'rxjs'
+import { combineLatest, merge, of, Observable } from 'rxjs'
 import { map, mapTo } from 'rxjs/operators'
 
-import { makeKeyupDriver } from './keyupDriver'
 import { Input } from './components'
+import { makeKeyupDriver } from './keyupDriver'
 
 type Sources = {
     DOM: DOMSource,

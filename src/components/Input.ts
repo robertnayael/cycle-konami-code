@@ -1,5 +1,5 @@
-import { form, label, input, DOMSource, VNode } from '@cycle/dom'
-import { Observable, of, concat, combineLatest } from 'rxjs'
+import { form, input, label, DOMSource, VNode } from '@cycle/dom'
+import { combineLatest, concat, Observable } from 'rxjs'
 import { map, mapTo, pluck, startWith } from 'rxjs/operators'
 
 function intent(DOM: DOMSource): Actions {

@@ -8,6 +8,7 @@
         "trailing-comma": [true, {"multiline": "never", "singleline": "never"}],
         "semicolon": [true, "never"],
         "function-name": [true, {"function-regex": "^[a-zA-Z$][\\w\\d]+$"}],
-        "array-bracket-spacing": [true, "always"]
+        "array-bracket-spacing": [true, "always"],
+        "ordered-imports": [true, {"import-sources-order": "any", "grouped-imports": true, "named-imports-order": "lowercase-first"}]
     }
 }
