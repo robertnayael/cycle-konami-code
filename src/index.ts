@@ -1,8 +1,9 @@
 import run from '@cycle/rxjs-run'
 import { div, makeDOMDriver, DOMSource, VNode } from '@cycle/dom'
-import { Observable } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { combineLatest, merge, of, Observable } from 'rxjs'
+import { map, mapTo } from 'rxjs/operators'
 
+import { Input } from './components'
 import { makeKeyupDriver } from './keyupDriver'
 
 type Sources = {
@@ -17,8 +18,33 @@ type Sinks = {
 function main(sources: Sources): Sinks {
     const keyup$ = sources.keyup
 
-    const DOM = keyup$.pipe(
-        map(key => div(key))
+    const inputSources: Input.Sources = {
+        DOM: sources.DOM,
+        props: of({
+            label: 'label',
+            initialValue: 'initial value'
+        })
+    }
+
+    const input = Input(inputSources)
+    const {
+        DOM: inputVDom$,
+        value: inputValue$,
+        focus: inputFocus$,
+        blur: inputBlur$
+    } = input
+
+    const hasFocus$ = merge(
+        inputFocus$.pipe(mapTo(true)),
+        inputBlur$.pipe(mapTo(false))
+    )
+
+    const DOM = combineLatest(inputVDom$, inputValue$, hasFocus$).pipe(
+        map(([ inputVDom, inputValue, hasFocus ]) => div([
+            inputVDom,
+            div(`Input value: ${inputValue}`),
+            div(`input is ${hasFocus ? '' : 'not'} focused`)
+        ]))
     )
 
     const sinks = { DOM }
