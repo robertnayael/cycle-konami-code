@@ -11,7 +11,6 @@ namespace Button {
 
     export interface Sources {
         DOM: DOMSource,
-        keyup: Observable<string>,
         props: Observable<Props>
     }
 
