@@ -2,7 +2,7 @@ import { button, DOMSource, VNode } from '@cycle/dom'
 import { combineLatest, of, Observable } from 'rxjs'
 import { map, scan, share, shareReplay, startWith } from 'rxjs/operators'
 
-namespace Button {
+export namespace Button {
 
     export interface Props {
         activeLabel: string
