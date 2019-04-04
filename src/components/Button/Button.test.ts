@@ -1,4 +1,5 @@
-import { DOMSource, MockedDOMSource } from '@cycle/dom'
+import { MockedDOMSource } from '@cycle/dom'
+import { DOMSource } from '@cycle/dom/lib/cjs/rxjs'
 import { hot } from 'jest-marbles'
 import { of, NEVER, Observable, Subject } from 'rxjs'
 import { map } from 'rxjs/operators'
@@ -45,7 +46,7 @@ describe('Button component', () => {
     })
 
     it('should emit `false` on start and then `true` / `false` on toggle on and off', () => {
-        const clicks$ =          hot('-----c---c-----c--c---c')
+        const clicks$ =         hot('-----c---c-----c--c---c')
         const expectedOutput$ = hot('f----t---f-----t--f---t', { f: 'f', t: 't' })
 
         const fixture = getButtonFixture({ activeLabel: 'l1', inactiveLabel: 'l2' }, clicks$)

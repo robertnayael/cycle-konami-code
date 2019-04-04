@@ -1,4 +1,5 @@
-import { button, DOMSource, VNode } from '@cycle/dom'
+import { button, VNode } from '@cycle/dom'
+import { DOMSource } from '@cycle/dom/lib/cjs/rxjs'
 import { combineLatest, of, Observable } from 'rxjs'
 import { map, scan, share, shareReplay, startWith } from 'rxjs/operators'
 
@@ -20,10 +21,12 @@ export namespace Button {
     }
 }
 
-export function Button({ DOM, keyup: keyup$, props: props$ }: Button.Sources): Button.Sinks {
+export function Button({ DOM, props: props$ }: Button.Sources): Button.Sinks {
 
-    const click$ = (DOM.select('button').events('click') as unknown as Observable<Event>)
-    .pipe(share())
+    const click$ = DOM
+        .select('button')
+        .events('click')
+        .pipe(share())
 
     const isActive$ = click$.pipe(
         startWith(false),
