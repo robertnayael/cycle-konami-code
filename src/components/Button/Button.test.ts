@@ -6,14 +6,11 @@ import { map } from 'rxjs/operators'
 
 import { Button } from './'
 
-function getButtonFixture(
+function createButton(
     props: Button.Props,
     click$: Observable<any> = NEVER
 ) {
     const propsMock = of(props)
-
-    const clickSubject = new Subject()
-    const triggerClick = () => clickSubject.next('click')
 
     const domSourceMock = new MockedDOMSource({
         button: {
@@ -28,17 +25,14 @@ function getButtonFixture(
 
     const sinks = Button(sources)
 
-    return {
-        sinks,
-        triggerClick
-    }
+    return sinks
 }
 
 describe('Button component', () => {
 
     it('should create', () => {
-        const fixture = getButtonFixture({ activeLabel: 'label1', inactiveLabel: 'label2' })
-        expect(fixture.sinks).toBeTruthy()
+        const sinks = createButton({ activeLabel: 'label1', inactiveLabel: 'label2' })
+        expect(sinks).toBeTruthy()
     })
 
     it.skip('should render a <button> element', () => {
@@ -49,9 +43,9 @@ describe('Button component', () => {
         const clicks$ =         hot('-----c---c-----c--c---c')
         const expectedOutput$ = hot('f----t---f-----t--f---t', { f: 'f', t: 't' })
 
-        const fixture = getButtonFixture({ activeLabel: 'l1', inactiveLabel: 'l2' }, clicks$)
+        const sinks = createButton({ activeLabel: 'l1', inactiveLabel: 'l2' }, clicks$)
 
-        const isActive$ = fixture.sinks.isActive.pipe(
+        const isActive$ = sinks.isActive.pipe(
             map(isActive => isActive ? 't' : 'f')
         )
 
