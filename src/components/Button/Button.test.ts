@@ -1,7 +1,7 @@
 import { MockedDOMSource } from '@cycle/dom'
 import { DOMSource } from '@cycle/dom/lib/cjs/rxjs'
 import { hot } from 'jest-marbles'
-import { of, NEVER, Observable, Subject } from 'rxjs'
+import { of, NEVER, Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 
 import { Button } from './'
@@ -35,8 +35,16 @@ describe('Button component', () => {
         expect(sinks).toBeTruthy()
     })
 
-    it.skip('should render a <button> element', () => {
+    it('should render a <button> element', () => {
+        const sinks = createButton({ activeLabel: 'label1', inactiveLabel: 'label2' })
 
+        const expectedElement$ = hot('b', { b: 'button' })
+
+        const renderedElement$ = sinks.DOM.pipe(
+            map(vnode => vnode.sel)
+        )
+
+        expect(renderedElement$).toBeObservable(expectedElement$)
     })
 
     it('should emit `false` on start and then `true` / `false` on toggle on and off', () => {
@@ -52,8 +60,17 @@ describe('Button component', () => {
         expect(isActive$).toBeObservable(expectedOutput$)
     })
 
-    it.skip('should switch labels on toggle on and off', () => {
+    it('should switch labels on toggle on and off', () => {
+        const clicks$ =         hot('-----c---c-----c--c---c')
+        const expectedLabels$ = hot('i----a---i-----a--i---a', { i: 'i', a: 'a' })
 
+        const sinks = createButton({ activeLabel: 'a', inactiveLabel: 'i' }, clicks$)
+
+        const renderedLabels$ = sinks.DOM.pipe(
+            map(vnode => vnode.text)
+        )
+
+        expect(renderedLabels$).toBeObservable(expectedLabels$)
     })
 
 })
