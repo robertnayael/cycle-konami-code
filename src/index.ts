@@ -1,10 +1,11 @@
 import run from '@cycle/rxjs-run'
-import { div, makeDOMDriver, DOMSource, VNode } from '@cycle/dom'
-import { combineLatest, merge, of, Observable } from 'rxjs'
-import { map, mapTo } from 'rxjs/operators'
+import { makeDOMDriver, DOMSource } from '@cycle/dom/lib/cjs/rxjs'
+import { div, VNode } from '@cycle/dom'
+import { combineLatest, of, Observable } from 'rxjs'
+import { filter, map, scan, startWith, switchMap, takeUntil } from 'rxjs/operators'
 
-import { Input } from './components'
 import { makeKeyupDriver } from './keyupDriver'
+import { Button } from './components'
 
 type Sources = {
     DOM: DOMSource,
@@ -18,37 +19,58 @@ type Sinks = {
 function main(sources: Sources): Sinks {
     const keyup$ = sources.keyup
 
-    const inputSources: Input.Sources = {
+    const button = Button({
         DOM: sources.DOM,
         props: of({
-            label: 'label',
-            initialValue: 'initial value'
+            inactiveLabel: '[change]',
+            activeLabel: '[accept]'
         })
+    })
+    const buttonDOM$ = button.DOM
+    const isButtonActive$ = button.isActive
+
+    const state = model(keyup$, isButtonActive$)
+    const DOM$ = view(state.currentSequence$, buttonDOM$, isButtonActive$)
+
+    return { DOM: DOM$ }
+}
+
+function model(keyup$: Observable<string>, isButtonActive$: Observable<boolean>) {
+
+    const recordingEnabled$ = isButtonActive$.pipe(
+        filter(isActive => isActive)
+    )
+
+    const recordingDisabled$ = isButtonActive$.pipe(
+        filter(isActive => !isActive)
+    )
+
+    const currentSequence$ = recordingEnabled$.pipe(
+        switchMap(() => keyup$.pipe(
+            startWith([]),
+            scan<string, string[]>((sequence, key) => [ ...sequence, key ]),
+            takeUntil(recordingDisabled$)
+        )),
+        startWith([ 'a', 'b', 'c' ])
+    )
+
+    return {
+        currentSequence$
     }
 
-    const input = Input(inputSources)
-    const {
-        DOM: inputVDom$,
-        value: inputValue$,
-        focus: inputFocus$,
-        blur: inputBlur$
-    } = input
+}
 
-    const hasFocus$ = merge(
-        inputFocus$.pipe(mapTo(true)),
-        inputBlur$.pipe(mapTo(false))
-    )
-
-    const DOM = combineLatest(inputVDom$, inputValue$, hasFocus$).pipe(
-        map(([ inputVDom, inputValue, hasFocus ]) => div([
-            inputVDom,
-            div(`Input value: ${inputValue}`),
-            div(`input is ${hasFocus ? '' : 'not'} focused`)
+function view(
+    currentSequence$: Observable<string[]>,
+    buttonDOM$: Observable<VNode>,
+    isButtonActive$: Observable<boolean>
+) {
+    return combineLatest(currentSequence$, buttonDOM$, isButtonActive$).pipe(
+        map(([ currentSequence, buttonDOM, isButtonActive ]) => div([
+            div(`${isButtonActive ? 'New' : 'Current'} sequence: ${currentSequence.map(key => `[ ${key} ]`).join(' ')}`),
+            buttonDOM
         ]))
     )
-
-    const sinks = { DOM }
-    return sinks
 }
 
 run(main, {
